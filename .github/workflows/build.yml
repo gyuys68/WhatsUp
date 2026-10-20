@@ -20,7 +20,6 @@ jobs:
           mv android android_old
           flutter create --platforms=android --project-name whatsup .
           cp android_old/app/google-services.json android/app/ 2>/dev/null || true
-          cp -r android_old/app/src/main/res/mipmap-* android/app/src/main/res/ 2>/dev/null || true
       - run: flutter pub get
       - run: |
           for f in $(find $HOME/.pub-cache/hosted -path "*/android/build.gradle"); do
