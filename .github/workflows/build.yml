@@ -21,6 +21,18 @@ jobs:
           cp android_old/app/google-services.json android/app/ 2>/dev/null || true
           cp -r android_old/app/src/main/res/mipmap-* android/app/src/main/res/ 2>/dev/null || true
       - run: flutter pub get
+      - run: |
+          for f in $(find $HOME/.pub-cache/hosted -path "*/android/build.gradle"); do
+            if ! grep -q "namespace" "$f"; then
+              d=$(dirname $(dirname "$f"))
+              m="$d/android/src/main/AndroidManifest.xml"
+              pkg=$(grep -o 'package="[^"]*"' "$m" | head -1 | cut -d'"' -f2)
+              if [ -n "$pkg" ]; then
+                sed -i "/^android {/a\\    namespace \"$pkg\"" "$f"
+                echo "fixed $f -> $pkg"
+              fi
+            fi
+          done
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
