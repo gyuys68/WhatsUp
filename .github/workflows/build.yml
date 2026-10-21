@@ -20,6 +20,45 @@ jobs:
           mv android android_old
           flutter create --platforms=android --project-name whatsup .
           cp android_old/app/google-services.json android/app/ 2>/dev/null || true
+          python3 - << 'PYEOF'
+          path = 'android/app/src/main/AndroidManifest.xml'
+          with open(path) as f:
+              content = f.read()
+          extra = '''    <uses-feature android:name="android.hardware.camera" />
+          <uses-feature android:name="android.hardware.camera.autofocus" />
+          <uses-permission android:name="android.permission.READ_CONTACTS"/>
+          <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+          <uses-permission android:name="android.permission.INTERNET"/>
+          <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+          <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+          <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
+          <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+          <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+          <uses-permission android:name="android.permission.CAMERA"/>
+          <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+          <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+          <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+          <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+          <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+          <queries>
+              <intent>
+                  <action android:name="android.intent.action.VIEW" />
+                  <data android:mimeType="*/*" />
+              </intent>
+              <intent>
+                  <action android:name="android.intent.action.VIEW" />
+                  <data android:scheme="sms" />
+              </intent>
+              <intent>
+                  <action android:name="android.intent.action.VIEW" />
+                  <data android:scheme="tel" />
+              </intent>
+          </queries>
+          '''
+          content = content.replace('    <application', extra + '    <application', 1)
+          with open(path, 'w') as f:
+              f.write(content)
+          PYEOF
       - run: flutter pub get
       - run: |
           for f in $(find $HOME/.pub-cache/hosted -path "*/android/build.gradle"); do
